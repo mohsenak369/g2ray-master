@@ -1,5 +1,5 @@
 {
-  "name": "dark-path-8d97e4",
+  "name": "sharp-bridge-b5ee86",
   "build": {
     "dockerfile": "Dockerfile",
     "context": "."
@@ -15,7 +15,7 @@
   "postAttachCommand": "gh codespace ports visibility 443:public -c $CODESPACE_NAME && bash /usr/local/bin/start.sh",
   "portsAttributes": {
     "443": {
-      "label": "dark-path-8d97e4",
+      "label": "sharp-bridge-b5ee86",
       "protocol": "http",
       "onAutoForward": "silent"
     }
