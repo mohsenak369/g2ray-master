@@ -1,46 +1,11 @@
 #!/bin/bash
-set -euo pipefail
-
-XRAY_BIN="/usr/local/bin/xray"
-TEMPLATE_CONFIG="/etc/xray/config.template.json"
-RUNTIME_CONFIG="/tmp/config.json"
-
-if [ ! -x "$XRAY_BIN" ]; then
-  echo "Error: Xray binary not found at ${XRAY_BIN}" >&2
-  exit 1
-fi
-
-if [ ! -f "$TEMPLATE_CONFIG" ]; then
-  echo "Error: Template config not found at ${TEMPLATE_CONFIG}" >&2
-  exit 1
-fi
-
-# 1) تولید UUID جدید برای هر بار ران شدن Codespace
-UUID="$(cat /proc/sys/kernel/random/uuid)"
-
-# 2) ساختن config بر اساس template
-sed "s/__UUID__/${UUID}/g" \
-  "$TEMPLATE_CONFIG" > "$RUNTIME_CONFIG"
-
+CONFIG="/etc/xray/g2ray.json"
+UUID=$(grep -o '"id": *"[^"]*"' "$CONFIG" | head -1 | grep -o '"[^"]*"$' | tr -d '"')
+if [ -z "$UUID" ]; then echo "[g2ray] UUID پیدا نشد."; exit 1; fi
+SNI="${CODESPACE_NAME}-443.app.github.dev"
+LINK="vless://${UUID}@94.130.50.12:443?encryption=none&security=tls&sni=${SNI}&host=${SNI}&fp=chrome&allowInsecure=1&type=xhttp&mode=packet-up&path=%2F#dark-path-8d97e4"
 echo ""
-echo "=========================================="
-echo "    Xray VLESS (XHTTP) on Codespaces"
-echo "=========================================="
+echo "================================================"
+echo "  $LINK"
+echo "================================================"
 echo ""
-echo "UUID (برای v2rayNG استفاده کن):"
-echo "  ${UUID}"
-echo ""
-
-if [ -n "${CODESPACE_NAME:-}" ]; then
-  # آدرس عمومی Codespaces روی پورت ۴۴۳
-  ENDPOINT="${CODESPACE_NAME}-443.app.github.dev"
-  echo "Endpoint:"
-  echo "  ${ENDPOINT}:443"
-  echo ""
-  echo "مثال VLESS Link:"
-  echo "  vless://${UUID}@${ENDPOINT}:443?encryption=none&security=none&type=http#codespace"
-  echo ""
-fi
-
-echo "Starting Xray..."
-exec "$XRAY_BIN" -config "$RUNTIME_CONFIG"
